@@ -10,18 +10,18 @@
             </tr>
         </thead>
         <tbody>
-            <cfloop array="#prc.tableDetail#" index="detail">
+            <cfloop array="#prc.columnDetail#" index="column">
                 <tr>
                     <td>
-                        <cfif detail.key EQ "PRI">
+                        <cfif column.key EQ "PRI">
                             <i class="bi bi-key"></i>
                         </cfif>
-                        #detail.Field#
+                        #column.field#
                     </td>
-                    <td>#detail.Type#</td>
-                    <td>#detail.Null#</td>
+                    <td>#column.type#</td>
+                    <td>#yesNoFormat(column.isNull)#</td>
                     <td>
-                        <cfif detail.key EQ "UNI">
+                        <cfif column.key EQ "UNI">
                             Unique Key
                         </cfif>
                     </td>

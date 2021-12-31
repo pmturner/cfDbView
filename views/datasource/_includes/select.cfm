@@ -13,7 +13,7 @@
             #tab##tab#FROM
                 #tab##tab##tab##prc.datasource.name#.#rc.table#;
             #tab##tab#WHERE
-                #tab##tab##tab##prc.primaryDetail.field# = &lt;cfqueryparam cfsqltype="#prc.primaryDetail.cfsqltype#" value="#prc.primaryDetail.default#" /&gt;
+                #tab##tab##tab##prc.primaryDetail.field# = &lt;cfqueryparam cfsqltype="#prc.primaryDetail.cfsqltype#" value="##arguments.#prc.primaryDetail.field###" /&gt;
         #tab#&lt;/cfquery&gt;
         #prc.nl#
     &lt;cfreturn local.qLoadAll /&gt;

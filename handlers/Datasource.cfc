@@ -21,7 +21,7 @@ component extends="coldbox.system.EventHandler" {
 
 		prc.datasource = adminService.getDatasource(rc.name);
 		prc.tableDetail = dbService.getTableDetail(
-			type=prc.datasource.dbdriver
+			driver=prc.datasource.dbdriver
 			, source=prc.datasource.name
 			, table=rc.table);
 

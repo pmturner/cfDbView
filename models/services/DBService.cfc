@@ -19,12 +19,12 @@ component accessors="true" singleton {
     }
 
     public array function getTableDetail(
-        required string type
+        required string driver
         , required string source
         , required string table) {
         var output = [];
 
-        switch(arguments.type) {
+        switch(arguments.driver) {
             case "MySQL":
             case "Other":
                 local.qDetail = dbGateway.getMySqlTableDetail(arguments.source, arguments.table);
@@ -105,6 +105,8 @@ component accessors="true" singleton {
                 , "isNull": column.null == "NO" ? false : true
                 , "default": local.default
                 , "type": column.type
+                , "key": column.key
+                , "extra": column.extra
                 , "simpleType": local.simpleType
                 , "cfsqltype": local.cfsqltype
                 , "friendlyName": trim(local.friendlyName)

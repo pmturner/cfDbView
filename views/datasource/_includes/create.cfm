@@ -5,8 +5,8 @@
     <cfset counter = 1 />
 
     CREATE TABLE '#rc.table#' (
-    <cfloop array="#prc.tableDetail#" index="column">
-        <cfset local.null = column.null == "NO" ? "NOT NULL" : "NULL" />
+    <cfloop array="#prc.columnDetail#" index="column">
+        <cfset local.null = column.isNull ? "NULL" : "NOT NULL" />
         <cfset local.default = len(column.default) ? " DEFAULT " & column.default : " DEFAULT ''" />
         <cfset local.extra = len(column.extra) ? " " & ucase(column.extra) : "" />
 
@@ -16,7 +16,7 @@
         <cfif column.key EQ "UNI">
             <cfset arrayAppend(uqKey, column.field) />
         </cfif>
-        <cfif column.key EQ "PRI" OR column.null NEQ "NO">
+        <cfif column.key EQ "PRI" OR column.isNull NEQ "NO">
             <cfset local.default = "" />
         </cfif>
         #tab#<cfif counter NEQ 1>, </cfif>#column.field# #column.type# #local.null##local.extra##local.default#
