@@ -4,7 +4,10 @@
         <cfargument name="name" type="string" required="true" />
 
         <cfquery datasource="#arguments.name#" name="local.qTables">
-            SHOW TABLES;
+            SHOW FULL
+                TABLES
+            WHERE
+                TABLE_TYPE != 'VIEW';
         </cfquery>
 
     <cfreturn local.qTables />
