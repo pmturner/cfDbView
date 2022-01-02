@@ -1,6 +1,4 @@
 <cfoutput>
-    <cfset tab = prc.tab />
-
     <cfset entity = left(rc.table, 3) EQ "tbl" ? right(rc.table, len(rc.table) - 3) : rc.table />
     <cfif findNoCase("id", prc.primaryDetail.field)>
         <cfset entity = left(prc.primaryDetail.field, len(prc.primaryDetail.field)-2) />
@@ -19,9 +17,5 @@
         <cfset counter++ />
     </cfloop>
 
-    coldbox create orm-entity
-    #tab#entityName=#ucFirst(entity)#
-    #tab#table=#rc.table#
-    #tab#primaryKey=#prc.primaryDetail.field#
-    #tab#properties=#properties#
+    coldbox create orm-entity --activeEntity entityName=#ucFirst(entity)# table=#rc.table# primaryKey=#prc.primaryDetail.field# properties=#properties#
 </cfoutput>
