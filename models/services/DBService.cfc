@@ -54,6 +54,12 @@ component accessors="true" singleton {
             local.fieldType = "text";
             local.simpleType = "string";
             local.default = '''''';
+            if (findNoCase("bit", column.type)) {
+                local.fieldType = "checkbox";
+            }
+            if (findNoCase("date", column.type)) {
+                local.cfsqltype = "CF_SQL_DATE";
+            }
             if (findNoCase("datetime", column.type)) {
                 local.cfsqltype = "CF_SQL_TIMESTAMP";
             }
@@ -62,24 +68,23 @@ component accessors="true" singleton {
                 local.simpleType = "numeric";
                 local.default = 0;
             }
-            if (findNoCase("date", column.type)) {
-                local.cfsqltype = "CF_SQL_DATE";
+            if (findNoCase("decimal", column.type)) {
+                local.cfsqltype = "CF_SQL_DECIMAL";
+                local.simpleType = "numeric";
+                local.default = 0;
             }
-            if (findNoCase("varchar", column.type) && findNoCase("000", column.type)) {
-                local.fieldType = "textarea";
-            }
-            if (findNoCase("bit", column.type)) {
-                local.fieldType = "checkbox";
+            if (findNoCase("float", column.type)) {
+                local.cfsqltype = "CF_SQL_FLOAT";
+                local.simpleType = "numeric";
+                local.default = 0;
             }
             if (findNoCase("tinyint", column.type)) {
                 local.cfsqltype = "CF_SQL_TINYINT";
                 local.simpleType = "numeric";
                 local.default = 0;
             }
-            if (findNoCase("decimal", column.type)) {
-                local.cfsqltype = "CF_SQL_DECIMAL";
-                local.simpleType = "numeric";
-                local.default = 0;
+            if (findNoCase("varchar", column.type) && findNoCase("000", column.type)) {
+                local.fieldType = "textarea";
             }
 
             local.friendlyName = "";

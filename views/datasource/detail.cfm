@@ -25,9 +25,8 @@
                     <li><a href="##update">Update</a></li>
                     <li><a href="##table">Table View</a></li>
                     <li><a href="##form">Form View</a></li>
-                    <li><a href="##model">ColdBox Model</a></li>
-                    <li><a href="##service">ColdBox Service</a></li>
-                    <li><a href="##gateway">ColdBox Gateway</a></li>
+                    <li><a href="##save">Simple Script Save</a></li>
+                    <li><a href="##entity">CommandBox ORM Entity CLI</a></li>
                 </ul>
             </div>
 
@@ -91,27 +90,19 @@
                     </textarea>
                 </cfprocessingdirective>
             </div>
-            <div id="model" class="mt-3">
-                <h3 class="border-bottom">ColdBox Model</h3>
+            <div id="save" class="mt-3">
+                <h3 class="border-bottom">Simple Script Save</h3>
                 <cfprocessingdirective suppressWhitespace="true">
                     <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/model.cfm">
+                        <cfinclude template="./_includes/save.cfm">
                     </textarea>
                 </cfprocessingdirective>
             </div>
-            <div id="service" class="mt-3">
-                <h3 class="border-bottom">ColdBox Service</h3>
+            <div id="entity" class="mt-3">
+                <h3 class="border-bottom">CommandBox ORM Entity CLI</h3>
                 <cfprocessingdirective suppressWhitespace="true">
                     <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/service.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="gateway" class="mt-3">
-                <h3 class="border-bottom">ColdBox Gateway</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/gateway.cfm">
+                        <cfinclude template="./_includes/entity.cfm">
                     </textarea>
                 </cfprocessingdirective>
             </div>
