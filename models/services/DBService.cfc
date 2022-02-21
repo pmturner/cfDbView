@@ -2,14 +2,32 @@ component accessors="true" singleton {
 
 	property name="utilService" inject="utilService";
 	property name="dbGateway" inject="dbGateway";
+    property name="aws" inject="aws@awscfml";
 
-    public query function getTables(required string type, required string name) {
-        var output = queryNew("");
+    public struct function getTables(required string name, required string type) {
+        var output = {};
 
         switch(arguments.type) {
+            case "aws-dynamodb":
+                local.tableInfo = aws.dynamodb.listTables();
+                local.tables = local.tableInfo.data.tableNames;
+
+                output.key = "name";
+                output.tables = [];
+                for (var table in local.tables) {
+                    var tableStruct = {
+                        "name": table
+                    };
+                    arrayAppend(output.tables, tableStruct);
+                }
+
+                break;
             case "MySQL":
             case "Other":
-                output = dbGateway.getMySqlTables(arguments.name);
+                local.qResults = dbGateway.getMySqlTables(arguments.name);
+                output.tables = utilService.queryToArray(local.qResults);
+                output.key = "Tables_in_#arguments.name#"
+
                 break;
             default:
                 break;
@@ -25,6 +43,77 @@ component accessors="true" singleton {
         var output = [];
 
         switch(arguments.driver) {
+            case "aws-dynamodb":
+                local.tableInfo = aws.dynamodb.describeTable(arguments.table);
+                local.tableScan = aws.dynamodb.scan(tableName=arguments.table);
+                local.tableFieldSample = local.tableScan.data.items[1];
+                local.pKeys = local.tableInfo.data.table.attributeDefinitions;
+                local.sKeys = [];
+
+                local.keysRemain = true;
+                local.nextKey = {};
+                local.payments = [];
+                while(local.keysRemain) {
+                    local.preffyPayments = aws.dynamodb.scan(
+                        tableName=arguments.table
+                        , exclusiveStartKey = local.nextKey);
+
+                    if (arrayLen(local.preffyPayments.data.items)) {
+                        for (var item in local.preffyPayments.data.items) {
+                            arrayAppend(local.payments, item);
+                        }
+                    }
+
+                    if (structKeyExists(local.preffyPayments.data, "lastEvaluatedKey")) {
+                        local.nextKey = local.preffyPayments.data.lastEvaluatedKey;
+                    } else {
+                        local.keysRemain = false;
+                    }
+                }
+
+                if (structKeyExists(local.tableInfo.data.table, "globalSecondaryIndexes") && arrayLen(local.tableInfo.data.table.globalSecondaryIndexes)) {
+                    for (var secondaryIndex in local.tableInfo.data.table.globalSecondaryIndexes) {
+                        if (arrayLen(secondaryIndex.keySchema)) {
+                            for (var sKey in secondaryIndex.keySchema) {
+                                arrayAppend(local.sKeys, sKey);
+                                for (var i = 1; i <= arrayLen(local.pKeys); i++) {
+                                    if (local.pKeys[i].attributeName == sKey.attributeName) {
+                                        arrayDeleteAt(local.pKeys, i);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (var fieldKey in local.tableFieldSample) {
+                    //Setting default to empty here since it should be applied as part of column details
+                    local.default = "";
+                    //DynamoDB does not auto increment primary keys
+                    local.extra = "";
+                    for (var sKey in local.sKeys) {
+                        if (fieldKey == sKey.attributeName) {
+                            local.extra = "Secondary Key";
+                        }
+                    }
+                    local.key = "";
+                    if (fieldKey == local.pKeys[1].attributeName) {
+                        local.key = "PRI";
+                    }
+                    local.type = utilService.determineType(local.tableFieldSample[fieldKey]);
+
+                    local.fieldStruct = {
+                        "default": local.default
+                        , "extra": local.extra
+                        , "field": fieldKey
+                        , "key": local.key
+                        , "null": "NO"
+                        , "type": local.type
+                    };
+
+                    arrayAppend(output, local.fieldStruct);
+                }
+                break;
             case "MySQL":
             case "Other":
                 local.qDetail = dbGateway.getMySqlTableDetail(arguments.source, arguments.table);
@@ -109,7 +198,7 @@ component accessors="true" singleton {
                 , "fieldType": local.fieldType
                 , "isNull": column.null == "NO" ? false : true
                 , "default": local.default
-                , "type": column.type
+                , "type": uCase(column.type)
                 , "key": column.key
                 , "extra": column.extra
                 , "simpleType": local.simpleType

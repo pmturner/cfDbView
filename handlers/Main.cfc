@@ -1,12 +1,28 @@
 component extends="coldbox.system.EventHandler" {
 
 	property name="adminService" inject="AdminService";
+	property name="aws" inject="aws@awscfml";
 
 	/**
 	 * Default Action
 	 */
 	function index( event, rc, prc ) {
-		prc.qDatasources = adminService.getDatasources();
+		try {
+			prc.qDatasources = adminService.getDatasources();
+			local.dynamoDb = aws.dynamodb.listTables();
+
+			queryAddRow(prc.qDatasources, {
+				name='aws-dynamodb'
+				, host=local.dynamoDb.host
+				, database='dynamodb'});
+
+			querySort(prc.qDatasources, function(rowA, rowB) {
+				return compare(rowA.name, rowB.name);
+			});
+		} catch (any e) {
+			// writeDump(e);abort;
+		}
+
 		event.setView( "main/index" );
 	}
 

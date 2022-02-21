@@ -61,6 +61,8 @@ component {
 		 */
 		settings = {
 			luceeAdminPassword: getSystemSetting("LUC_PASSWORD", "")
+			, nl: chr(10)
+			, tab: chr(9)
 		};
 
 		/**
@@ -139,7 +141,14 @@ component {
 		 *
 		 * }
 		 */
-		moduleSettings = {};
+		variables.util = new coldbox.system.core.util.Util();
+		moduleSettings = {
+			awscfml: {
+				awsKey: util.getSystemSetting("AWS_KEY"),
+				awsSecretKey: util.getSystemSetting("AWS_SECRET"),
+				defaultRegion: util.getSystemSetting("AWS_REGION")
+			}
+		};
 
 		/**
 		 * --------------------------------------------------------------------------

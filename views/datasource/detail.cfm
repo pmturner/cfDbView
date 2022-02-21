@@ -18,94 +18,24 @@
             <div>
                 <ul>
                     <li><a href="##cinfo">Column Information</a></li>
-                    <li><a href="##create">Create Table</a></li>
-                    <li><a href="##selectAll">Select All</a></li>
-                    <li><a href="##select">Select by Primary</a></li>
-                    <li><a href="##insert">Insert</a></li>
-                    <li><a href="##update">Update</a></li>
-                    <li><a href="##table">Table View</a></li>
-                    <li><a href="##form">Form View</a></li>
-                    <li><a href="##save">Simple Script Save</a></li>
-                    <li><a href="##entity">CommandBox ORM Entity CLI</a></li>
+                    <cfloop collection="#prc.statements#" item="key">
+                        <li><a href="###key#">#prc.statements[key].name#</a></li>
+                    </cfloop>
                 </ul>
             </div>
 
             <div id="cinfo" class="mt-3">
                 <h3 class="border-bottom">Column Information</h3>
-                <cfinclude template="./_includes/columnInfo.cfm" />
+                <cfinclude template="./_includes/#prc.driverType#/columnInfo.cfm" />
             </div>
-            <div id="create" class="mt-3">
-                <h3 class="border-bottom">Create</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/create.cfm">
+            <cfloop collection="#prc.statements#" item="key">
+                <div id="#key#" class="mt-3">
+                    <h3 class="border-bottom">#prc.statements[key].name#</h3>
+                    <textarea disabled="true" class="w-100" rows="10"><cfsilent>
+                        </cfsilent>#prc.statements[key].output#
                     </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="selectAll" class="mt-3">
-                <h3 class="border-bottom">Select All</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/selectAll.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="select" class="mt-3">
-                <h3 class="border-bottom">Select by Primary</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/select.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="insert" class="mt-3">
-                <h3 class="border-bottom">Insert</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/insert.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="update" class="mt-3">
-                <h3 class="border-bottom">Update</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/update.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="table" class="mt-3">
-                <h3 class="border-bottom">Table View</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/table.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="form" class="mt-3">
-                <h3 class="border-bottom">Form View</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/form.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="save" class="mt-3">
-                <h3 class="border-bottom">Simple Script Save</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/save.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
-            <div id="entity" class="mt-3">
-                <h3 class="border-bottom">CommandBox ORM Entity CLI</h3>
-                <cfprocessingdirective suppressWhitespace="true">
-                    <textarea disabled="true" class="w-100" rows="10">
-                        <cfinclude template="./_includes/entity.cfm">
-                    </textarea>
-                </cfprocessingdirective>
-            </div>
+                </div>
+            </cfloop>
 		</section>
 	</div>
 </div>

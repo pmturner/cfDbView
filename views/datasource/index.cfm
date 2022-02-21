@@ -6,13 +6,11 @@
 			<div class="pb-2 mt-4 mb-2 border-bottom">
 				<h2>Tables in #rc.name#</h2>
 			</div>
-
 			<ul>
-				<cfset tableNameKey = "Tables_in_#rc.name#" />
-				<cfloop query="#prc.qTables#">
+				<cfloop array="#prc.tables#" index="table">
 					<li>
-						<a href="#event.buildLink("detail")#/#rc.name#/#prc.qTables[tableNameKey]#">
-							#prc.qTables[tableNameKey]#
+						<a href="#event.buildLink("detail")#/#rc.name#/#table[prc.tableNameKey]#">
+							#table[prc.tableNameKey]#
 						</a>
 					</li>
 				</cfloop>

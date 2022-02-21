@@ -22,4 +22,26 @@ component accessors="true" singleton {
         return output;
     }
 
+    public string function determineType(required any value) {
+        var type = "string";
+
+        if (isNumeric(arguments.value) && isValid("integer", arguments.value)) {
+            type = "int";
+        }
+        if (isNumeric(arguments.value) && isValid("float", arguments.value)) {
+            type = "float";
+        }
+        if (isValid("boolean", arguments.value)) {
+            type = "bit";
+        }
+        if (isDate(arguments.value)) {
+            type = "datetime";
+        }
+        if (isValid("date", arguments.value)) {
+            type = "date";
+        }
+
+        return type;
+    }
+
 }

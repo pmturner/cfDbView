@@ -25,10 +25,12 @@
     },
     "installPaths":{
         "coldbox":"coldbox/",
-        "testbox":"testbox/"
+        "testbox":"testbox/",
+        "aws-cfml":"modules/awscfml/"
     },
     "dependencies":{
-        "coldbox":"^6.0.0"
+        "coldbox":"^6.0.0",
+        "aws-cfml":"^1.22.0"
     },
     "scripts":{},
     "testbox":{
