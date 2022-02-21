@@ -26,7 +26,7 @@
 
             <div id="cinfo" class="mt-3">
                 <h3 class="border-bottom">Column Information</h3>
-                <cfinclude template="./_includes/#prc.driverType#/columnInfo.cfm" />
+                <cfinclude template="./_includes/columnInfo.cfm" />
             </div>
             <cfloop collection="#prc.statements#" item="key">
                 <div id="#key#" class="mt-3">
