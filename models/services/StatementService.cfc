@@ -177,9 +177,9 @@ component accessors="true" singleton {
 		var output = "";
 		var counter = 1;
 
-		output &= '<cffunction name="loadAll" returntype="query" output="false">';
+		output &= '<cffunction name="load" returntype="query" output="false">';
         output &= '#nl##tab#&lt;cfargument name="#arguments.primaryDetail.field#" type="#arguments.primaryDetail.simpleType#" required="true" />';
-		output &= '#nl##nl##tab#<cfquery name="local.qLoadAll">';
+		output &= '#nl##nl##tab#<cfquery name="local.qLoad">';
         output &= '#nl##tab##tab#SELECT';
 		for (var column in arguments.columnDetail) {
 			output &= '#nl##tab##tab##tab#';
@@ -196,7 +196,7 @@ component accessors="true" singleton {
 		output &= '#nl##tab##tab##tab##arguments.primaryDetail.field# = <cfqueryparam cfsqltype="#arguments.primaryDetail.cfsqltype#" value="##arguments.#arguments.primaryDetail.field###" />;';
         output &= '#nl##tab#</cfquery>';
 
-        output &= '#nl##nl#<cfreturn local.qLoadAll />#nl#</cffunction>';
+        output &= '#nl##nl#<cfreturn local.qLoad />#nl#</cffunction>';
 
 		return output;
 	}
@@ -232,7 +232,15 @@ component accessors="true" singleton {
 			if (counter != 1) {
 				output &= ', ';
 			}
-			output &= '&lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#column.field###" /&gt;';
+			output &= '&lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#column.field###"';
+
+			if (findNoCase("varchar", column.type)) {
+				local.max = replace(replaceNoCase(column.type, "varchar(", ""), ")", "");
+				output &= ' maxlength="#local.max#" /&gt;';
+			} else {
+				output &= ' /&gt;';
+			}
+
 			counter++;
 		}
 
@@ -269,7 +277,15 @@ component accessors="true" singleton {
 			if (counter != 1) {
 				output &= ', ';
 			}
-			output &= '#column.field# = &lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#column.field###" /&gt;';
+			output &= '#column.field# = &lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#column.field###"';
+
+			if (findNoCase("varchar", column.type)) {
+				local.max = replace(replaceNoCase(column.type, "varchar(", ""), ")", "");
+				output &= ' maxlength="#local.max#" /&gt;';
+			} else {
+				output &= ' /&gt;';
+			}
+
 			counter++;
 		}
 
