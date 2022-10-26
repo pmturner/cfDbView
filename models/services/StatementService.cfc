@@ -50,6 +50,7 @@ component accessors="true" singleton {
 						, "output": generateInsert(
 							arguments.datasource
 							, arguments.table
+							, arguments.primaryDetail
 							, arguments.remainderDetail)
 					},
 					"update": {
@@ -62,8 +63,26 @@ component accessors="true" singleton {
 							, arguments.primaryDetail
 							, arguments.remainderDetail)
 					},
-					"saveDetailed": {
+					"init": {
 						"order": 6
+						, "name": "Init Script"
+						, "output": generateInit(
+							arguments.datasource
+							, arguments.table
+							, arguments.columnDetail)
+					},
+					"generic": {
+						"order": 7
+						, "name": "Generic Service Script"
+						, "output": generateGeneric(
+							arguments.datasource
+							, arguments.table
+							, arguments.columnDetail
+							, arguments.primaryDetail
+							, arguments.remainderDetail)
+					},
+					"saveDetailed": {
+						"order": 8
 						, "name": "Detailed Script Save"
 						, "output": generateSave(
 							arguments.datasource
@@ -73,17 +92,17 @@ component accessors="true" singleton {
 							, arguments.remainderDetail)
 					},
 					"form": {
-						"order": 7
+						"order": 9
 						, "name": "HTML Form"
 						, "output": generateForm(arguments.remainderDetail)
 					},
 					"table": {
-						"order": 8
+						"order": 10
 						, "name": "HTML Table"
 						, "output": generateTable(arguments.columnDetail)
 					},
 					"entity": {
-						"order": 9
+						"order": 11
 						, "name": "CommandBox Entity"
 						, "output": generateEntity(
 							arguments.table
@@ -204,15 +223,18 @@ component accessors="true" singleton {
 	private string function generateInsert(
 		required struct datasource
 		, required string table
+		, required struct primaryDetail
 		, required array remainderDetail) {
 
 		var output = "";
 		var counter = 1;
-
-		output &= '&lt;cffunction name="insert" returntype="numeric" output="false"&gt;';
-		for (var column in arguments.remainderDetail) {
-			output &= '#nl##tab#&lt;cfargument name="#column.field#" type="#column.simpleType#" required="true" /&gt;';
+		var objName = "q#primaryDetail.field#";
+		if (right(objName, 2) == "ID") {
+			objName = left(objName, len(objName) - 2);
 		}
+
+		output &= '&lt;cffunction name="insertRecord" returntype="numeric" output="false"&gt;';
+		output &= '#nl##tab#&lt;cfargument name="#objName#" type="any" required="true" /&gt;';
 		output &= '#nl##nl##tab#&lt;cfquery result="local.qInsert" datasource="#arguments.datasource.name#"&gt;';
         output &= '#nl##tab##tab#INSERT INTO #arguments.datasource.name#.#arguments.table# (';
 
@@ -232,7 +254,7 @@ component accessors="true" singleton {
 			if (counter != 1) {
 				output &= ', ';
 			}
-			output &= '&lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#column.field###"';
+			output &= '&lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#objName#.#column.field###"';
 
 			if (findNoCase("varchar", column.type)) {
 				local.max = replace(replaceNoCase(column.type, "varchar(", ""), ")", "");
@@ -261,12 +283,13 @@ component accessors="true" singleton {
 
 		var output = "";
 		var counter = 1;
-
-		output &= '&lt;cffunction name="update" returntype="void" output="false"&gt;';
-
-		for (var column in arguments.columnDetail) {
-        	output &= '#nl##tab#&lt;cfargument name="#column.field#" type="#column.simpleType#" required="true" /&gt;';
+		var objName = "q#primaryDetail.field#";
+		if (right(objName, 2) == "ID") {
+			objName = left(objName, len(objName) - 2);
 		}
+
+		output &= '&lt;cffunction name="updateRecord" returntype="void" output="false"&gt;';
+		output &= '#nl##tab#&lt;cfargument name="#objName#" type="any" required="true" /&gt;';
 
 		output &= '#nl##nl##tab#&lt;cfquery name="local.qInsert" datasource="#arguments.datasource.name#"&gt;';
         output &= '#nl##tab##tab#UPDATE #arguments.datasource.name#.#arguments.table#';
@@ -277,7 +300,7 @@ component accessors="true" singleton {
 			if (counter != 1) {
 				output &= ', ';
 			}
-			output &= '#column.field# = &lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#column.field###"';
+			output &= '#column.field# = &lt;cfqueryparam cfsqltype="#column.cfsqltype#" value="##arguments.#objName#.#column.field###"';
 
 			if (findNoCase("varchar", column.type)) {
 				local.max = replace(replaceNoCase(column.type, "varchar(", ""), ")", "");
@@ -294,6 +317,86 @@ component accessors="true" singleton {
         output &= '#nl##tab#&lt;/cfquery&gt;';
 	    output &= '#nl##nl#&lt;cfreturn arguments.#arguments.primaryDetail.field# /&gt;';
     	output &= '#nl#&lt;/cffunction&gt;';
+
+		return output;
+	}
+
+	private string function generateInit(
+		required struct datasource
+		, required string table
+		, required array columnDetail
+		, boolean doubleTab=false) {
+
+		var output = "";
+		var counter = 1;
+		var service = left(arguments.table, 3) == "tbl" ? right(arguments.table, len(arguments.table) - 3) & "Service": arguments.table & "Service";
+		local.tab = tab;
+		if (arguments.doubleTab) {
+			local.tab = tab & tab;
+		}
+
+		output &= 'public query function buildInit() {';
+        output &= '#nl##local.tab#var qInit = load(0);';
+		output &= '#nl##nl##local.tab#queryAddRow(qInit, {';
+
+		for (var column in arguments.columnDetail) {
+			output &= '#nl##local.tab##local.tab#';
+			if (counter != 1) {
+				output &= ', ';
+			}
+			output &= '"#column.field#"=#column.default#';
+			counter++;
+		}
+
+		output &= '#nl##local.tab#});';
+		output &= '#nl##nl##local.tab#return qInit;';
+		output &= '#nl#';
+		if (arguments.doubleTab) {
+			output&= '#chr(9)#';
+		}
+		output &= '}';
+
+		return output;
+	}
+
+	private string function generateGeneric(
+		required struct datasource
+		, required string table
+		, required array columnDetail
+		, required struct primaryDetail
+		, required array remainderDetail) {
+
+		var output = "";
+		var counter = 1;
+		var service = left(arguments.table, 3) == "tbl" ? right(arguments.table, len(arguments.table) - 3) & "Service": arguments.table & "Service";
+		var gateway = left(arguments.table, 3) == "tbl" ? right(arguments.table, len(arguments.table) - 3) & "Gateway": arguments.table & "Gateway";
+		var objName = "q#primaryDetail.field#";
+		if (right(objName, 2) == "ID") {
+			objName = left(objName, len(objName) - 2);
+		}
+
+		output &= 'component accessors="true" singleton {';
+		output &= '#nl##tab#property name="#gateway#" inject="#ucFirst(gateway)#";';
+
+		output &= '#nl##nl##tab##generateInit(arguments.datasource, arguments.table, arguments.columnDetail, true)#';
+
+		output &= '#nl##nl##tab#remote query function load(required numeric #primaryDetail.field#) {';
+        output &= '#nl##tab##tab#return #gateway#.load(arguments.#primaryDetail.field#);';
+        output &= '#nl##tab#}';
+
+		output &= '#nl##nl##tab#remote query function loadAll() {';
+        output &= '#nl##tab##tab#return #gateway#.loadAll();';
+        output &= '#nl##tab#}';
+
+		output &= '#nl##nl##tab#remote numeric function save(required query #objName#) {';
+        output &= '#nl##tab##tab#if (val(arguments.#objName#.#primaryDetail.field#)) {';
+        output &= '#nl##tab##tab##tab##gateway#.updateRecord(arguments.#objName#);';
+        output &= '#nl##tab##tab##tab#return arguments.#objName#.#primaryDetail.field#;';
+        output &= '#nl##tab##tab#} else {';
+        output &= '#nl##tab##tab##tab#return #gateway#.insertRecord(arguments.#objName#);';
+        output &= '#nl##tab##tab#}';
+        output &= '#nl##tab#}';
+        output &= '#nl#}';
 
 		return output;
 	}
