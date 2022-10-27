@@ -18,25 +18,45 @@ component accessors="true" singleton {
 					"service": {
 						"order": 1
 						, "name": "Generic AWS Service"
-						, "output": generateService()
+						, "output": generateAwsService()
 					}
 				];
 				break;
 			case "mysql":
 			default:
 				output = [
-					"create":  {
+					"service": {
 						"order": 1
+						, "name": "Generic Service Script"
+						, "output": generateService(
+							arguments.datasource
+							, arguments.table
+							, arguments.columnDetail
+							, arguments.primaryDetail
+							, arguments.remainderDetail)
+					},
+					"gateway": {
+						"order": 2
+						, "name": "Generic Gateway Script"
+						, "output": generateGateway(
+							arguments.datasource
+							, arguments.table
+							, arguments.columnDetail
+							, arguments.primaryDetail
+							, arguments.remainderDetail)
+					},
+					"create":  {
+						"order": 3
 						, "name": "Create Table"
 						, "output": generateCreate(arguments.table, arguments.columnDetail)
 					},
 					"selectAll":  {
-						"order": 2
+						"order": 4
 						, "name": "Select All"
 						, "output": generateSelectAll(arguments.datasource, arguments.table, arguments.columnDetail)
 					},
 					"select": {
-						"order": 3
+						"order": 5
 						, "name": "Select"
 						, "output": generateSelect(
 							arguments.datasource
@@ -45,7 +65,7 @@ component accessors="true" singleton {
 							, arguments.primaryDetail)
 					},
 					"insert": {
-						"order": 4
+						"order": 6
 						, "name": "Insert"
 						, "output": generateInsert(
 							arguments.datasource
@@ -54,7 +74,7 @@ component accessors="true" singleton {
 							, arguments.remainderDetail)
 					},
 					"update": {
-						"order": 5
+						"order": 7
 						, "name": "Update"
 						, "output": generateUpdate(
 							arguments.datasource
@@ -64,25 +84,15 @@ component accessors="true" singleton {
 							, arguments.remainderDetail)
 					},
 					"init": {
-						"order": 6
+						"order": 8
 						, "name": "Init Script"
 						, "output": generateInit(
 							arguments.datasource
 							, arguments.table
 							, arguments.columnDetail)
 					},
-					"generic": {
-						"order": 7
-						, "name": "Generic Service Script"
-						, "output": generateGeneric(
-							arguments.datasource
-							, arguments.table
-							, arguments.columnDetail
-							, arguments.primaryDetail
-							, arguments.remainderDetail)
-					},
 					"saveDetailed": {
-						"order": 8
+						"order": 9
 						, "name": "Detailed Script Save"
 						, "output": generateSave(
 							arguments.datasource
@@ -92,17 +102,17 @@ component accessors="true" singleton {
 							, arguments.remainderDetail)
 					},
 					"form": {
-						"order": 9
+						"order": 10
 						, "name": "HTML Form"
 						, "output": generateForm(arguments.remainderDetail)
 					},
 					"table": {
-						"order": 10
+						"order": 11
 						, "name": "HTML Table"
 						, "output": generateTable(arguments.columnDetail)
 					},
 					"entity": {
-						"order": 11
+						"order": 12
 						, "name": "CommandBox Entity"
 						, "output": generateEntity(
 							arguments.table
@@ -164,15 +174,24 @@ component accessors="true" singleton {
 		return output;
 	}
 
-	private string function generateSelectAll(required struct datasource, required string table, required array columnDetail) {
+	private string function generateSelectAll(
+		required struct datasource
+		, required string table
+		, required array columnDetail
+		, boolean doubleTab=false) {
+
 		var output = "";
 		var counter = 1;
+		local.tab = tab;
+		if (arguments.doubleTab) {
+			local.tab = tab & tab;
+		}
 
 		output &= '<cffunction name="loadAll" returntype="query" output="false">';
 		output &= '#nl##tab#<cfquery name="local.qLoadAll">';
-        output &= '#nl##tab##tab#SELECT';
+        output &= '#nl##tab##chr(9)#SELECT';
 		for (var column in arguments.columnDetail) {
-			output &= '#nl##tab##tab##tab#';
+			output &= '#nl##tab##chr(9)##chr(9)#';
 			if (counter != 1) {
 				output &= ', ';
 			}
@@ -180,10 +199,18 @@ component accessors="true" singleton {
 			counter++;
 
 		}
-		output &= '#nl##tab##tab#FROM';
-		output &= '#nl##tab##tab##tab##arguments.datasource.name#.#arguments.table#;';
+		output &= '#nl##tab##chr(9)#FROM';
+		output &= '#nl##tab##chr(9)##chr(9)##arguments.table#;';
         output &= '#nl##tab#</cfquery>';
-        output &= '#nl##nl#<cfreturn local.qLoadAll />#nl#</cffunction>';
+        output &= '#nl##nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '<cfreturn local.qLoadAll />#nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '</cffunction>';
 
 		return output;
 	}
@@ -192,16 +219,22 @@ component accessors="true" singleton {
 		required struct datasource
 		, required string table
 		, required array columnDetail
-		, required struct primaryDetail) {
+		, required struct primaryDetail
+		, boolean doubleTab=false) {
+
 		var output = "";
 		var counter = 1;
+		local.tab = tab;
+		if (arguments.doubleTab) {
+			local.tab = tab & tab;
+		}
 
-		output &= '<cffunction name="load" returntype="query" output="false">';
-        output &= '#nl##tab#&lt;cfargument name="#arguments.primaryDetail.field#" type="#arguments.primaryDetail.simpleType#" required="true" />';
-		output &= '#nl##nl##tab#<cfquery name="local.qLoad">';
-        output &= '#nl##tab##tab#SELECT';
+		output &= '&lt;cffunction name="load" returntype="query" output="false"&gt;';
+        output &= '#nl##tab#&lt;cfargument name="#arguments.primaryDetail.field#" type="#arguments.primaryDetail.simpleType#" required="true" /&gt;';
+		output &= '#nl##nl##tab#&lt;cfquery name="local.qLoad"&gt;';
+        output &= '#nl##tab##chr(9)#SELECT';
 		for (var column in arguments.columnDetail) {
-			output &= '#nl##tab##tab##tab#';
+			output &= '#nl##tab##chr(9)##chr(9)#';
 			if (counter != 1) {
 				output &= ', ';
 			}
@@ -209,13 +242,21 @@ component accessors="true" singleton {
 			counter++;
 
 		}
-		output &= '#nl##tab##tab#FROM';
-		output &= '#nl##tab##tab##tab##arguments.datasource.name#.#arguments.table#';
-		output &= '#nl##tab##tab#WHERE';
-		output &= '#nl##tab##tab##tab##arguments.primaryDetail.field# = <cfqueryparam cfsqltype="#arguments.primaryDetail.cfsqltype#" value="##arguments.#arguments.primaryDetail.field###" />;';
-        output &= '#nl##tab#</cfquery>';
+		output &= '#nl##tab##chr(9)#FROM';
+		output &= '#nl##tab##tab##chr(9)##arguments.table#';
+		output &= '#nl##tab##chr(9)#WHERE';
+		output &= '#nl##tab##tab##chr(9)##arguments.primaryDetail.field# = <cfqueryparam cfsqltype="#arguments.primaryDetail.cfsqltype#" value="##arguments.#arguments.primaryDetail.field###" />;';
+        output &= '#nl##tab#&lt;/cfquery&gt;';
 
-        output &= '#nl##nl#<cfreturn local.qLoad />#nl#</cffunction>';
+        output &= '#nl##nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '&lt;cfreturn local.qLoad /&gt;#nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '&lt;/cffunction&gt;';
 
 		return output;
 	}
@@ -224,7 +265,8 @@ component accessors="true" singleton {
 		required struct datasource
 		, required string table
 		, required struct primaryDetail
-		, required array remainderDetail) {
+		, required array remainderDetail
+		, boolean doubleTab=false) {
 
 		var output = "";
 		var counter = 1;
@@ -232,14 +274,18 @@ component accessors="true" singleton {
 		if (right(objName, 2) == "ID") {
 			objName = left(objName, len(objName) - 2);
 		}
+		local.tab = tab;
+		if (arguments.doubleTab) {
+			local.tab = tab & tab;
+		}
 
 		output &= '&lt;cffunction name="insertRecord" returntype="numeric" output="false"&gt;';
 		output &= '#nl##tab#&lt;cfargument name="#objName#" type="any" required="true" /&gt;';
 		output &= '#nl##nl##tab#&lt;cfquery result="local.qInsert" datasource="#arguments.datasource.name#"&gt;';
-        output &= '#nl##tab##tab#INSERT INTO #arguments.datasource.name#.#arguments.table# (';
+        output &= '#nl##tab##chr(9)#INSERT INTO #arguments.table# (';
 
 		for (var column in arguments.remainderDetail) {
-			output &= '#nl##tab##tab##tab#';
+			output &= '#nl##tab##chr(9)##chr(9)#';
 			if (counter != 1) {
 				output &= ', ';
 			}
@@ -247,10 +293,10 @@ component accessors="true" singleton {
 			counter++;
 		}
 
-		output &= '#nl##tab##tab#) VALUES (';
+		output &= '#nl##tab##chr(9)#) VALUES (';
 		counter = 1;
 		for (var column in arguments.remainderDetail) {
-			output &= '#nl##tab##tab##tab#';
+			output &= '#nl##tab##chr(9)##chr(9)#';
 			if (counter != 1) {
 				output &= ', ';
 			}
@@ -266,10 +312,17 @@ component accessors="true" singleton {
 			counter++;
 		}
 
-		output &= '#nl##tab##tab#);';
+		output &= '#nl##tab##chr(9)#);';
         output &= '#nl##tab#&lt;/cfquery&gt;';
-		output &= '#nl##nl#&lt;cfreturn local.qInsert.generatedKey /&gt;';
-    	output &= '#nl#&lt;/cffunction&gt;';
+		output &= '#nl##nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '&lt;cfreturn local.qInsert.generatedKey /&gt;#nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+    	output &= '&lt;/cffunction&gt;';
 
 		return output;
 	}
@@ -279,7 +332,8 @@ component accessors="true" singleton {
 		, required string table
 		, required array columnDetail
 		, required struct primaryDetail
-		, required array remainderDetail) {
+		, required array remainderDetail
+		, boolean doubleTab=false) {
 
 		var output = "";
 		var counter = 1;
@@ -287,16 +341,35 @@ component accessors="true" singleton {
 		if (right(objName, 2) == "ID") {
 			objName = left(objName, len(objName) - 2);
 		}
+		local.tab = tab;
+		if (arguments.doubleTab) {
+			local.tab = tab & tab;
+		}
 
-		output &= '&lt;cffunction name="updateRecord" returntype="void" output="false"&gt;';
-		output &= '#nl##tab#&lt;cfargument name="#objName#" type="any" required="true" /&gt;';
+		output &= '&lt;cffunction name="updateRecord" returntype="numeric" output="false"&gt;';
+		output &= '#nl##local.tab#&lt;cfargument name="#objName#" type="any" required="true" /&gt;';
 
-		output &= '#nl##nl##tab#&lt;cfquery name="local.qInsert" datasource="#arguments.datasource.name#"&gt;';
-        output &= '#nl##tab##tab#UPDATE #arguments.datasource.name#.#arguments.table#';
-        output &= '#nl##tab##tab#SET';
+		output &= '#nl##nl##local.tab#&lt;cfquery name="local.qInsert" datasource="#arguments.datasource.name#"&gt;';
+        output &= '#nl##local.tab#';
+		if (!arguments.doubleTab) {
+			output &= local.tab;
+		} else {
+			output &= chr(9);
+		}
+		output &= 'UPDATE #arguments.table#';
+		output &= '#nl##local.tab#';
+		if (!arguments.doubleTab) {
+			output &= local.tab;
+		} else {
+			output &= chr(9);
+		}
+        output &= 'SET';
 
 		for (var column in arguments.remainderDetail) {
-			output &= '#nl##tab##tab##tab#';
+			output &= '#nl##local.tab##local.tab#';
+			if (!arguments.doubleTab) {
+				output &= local.tab;
+			}
 			if (counter != 1) {
 				output &= ', ';
 			}
@@ -312,11 +385,24 @@ component accessors="true" singleton {
 			counter++;
 		}
 
-		output &= '#nl##tab##tab#WHERE';
-        output &= '#nl##tab##tab##tab##arguments.primaryDetail.field# = &lt;cfqueryparam cfsqltype="#arguments.primaryDetail.cfsqltype#" value="##arguments.#arguments.primaryDetail.field###" /&gt;;';
-        output &= '#nl##tab#&lt;/cfquery&gt;';
-	    output &= '#nl##nl#&lt;cfreturn arguments.#arguments.primaryDetail.field# /&gt;';
-    	output &= '#nl#&lt;/cffunction&gt;';
+		output &= '#nl##tab##chr(9)#'
+		output &= 'WHERE';
+        output &= '#nl##local.tab#';
+		if (!arguments.doubleTab) {
+			output &= local.tab;
+		}
+		output &= '#local.tab##arguments.primaryDetail.field# = &lt;cfqueryparam cfsqltype="#arguments.primaryDetail.cfsqltype#" value="##arguments.#arguments.primaryDetail.field###" /&gt;;';
+        output &= '#nl##local.tab#&lt;/cfquery&gt;';
+	    output &= '#nl##nl#';
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '&lt;cfreturn arguments.#arguments.primaryDetail.field# /&gt;';
+    	output &= '#nl#'
+		if (arguments.doubleTab) {
+			output &= chr(9);
+		}
+		output &= '&lt;/cffunction&gt;';
 
 		return output;
 	}
@@ -340,7 +426,12 @@ component accessors="true" singleton {
 		output &= '#nl##nl##local.tab#queryAddRow(qInit, {';
 
 		for (var column in arguments.columnDetail) {
-			output &= '#nl##local.tab##local.tab#';
+			output &= '#nl##local.tab#';
+			if (!arguments.doubleTab) {
+				output &= local.tab;
+			} else {
+				output &= chr(9);
+			}
 			if (counter != 1) {
 				output &= ', ';
 			}
@@ -359,7 +450,7 @@ component accessors="true" singleton {
 		return output;
 	}
 
-	private string function generateGeneric(
+	private string function generateService(
 		required struct datasource
 		, required string table
 		, required array columnDetail
@@ -390,13 +481,40 @@ component accessors="true" singleton {
 
 		output &= '#nl##nl##tab#remote numeric function save(required query #objName#) {';
         output &= '#nl##tab##tab#if (val(arguments.#objName#.#primaryDetail.field#)) {';
-        output &= '#nl##tab##tab##tab##gateway#.updateRecord(arguments.#objName#);';
-        output &= '#nl##tab##tab##tab#return arguments.#objName#.#primaryDetail.field#;';
+        output &= '#nl##tab##tab##tab#return #gateway#.updateRecord(arguments.#objName#);';
         output &= '#nl##tab##tab#} else {';
         output &= '#nl##tab##tab##tab#return #gateway#.insertRecord(arguments.#objName#);';
         output &= '#nl##tab##tab#}';
         output &= '#nl##tab#}';
         output &= '#nl#}';
+
+		return output;
+	}
+
+	private string function generateGateway(
+		required struct datasource
+		, required string table
+		, required array columnDetail
+		, required struct primaryDetail
+		, required array remainderDetail) {
+
+		var output = "";
+		var counter = 1;
+		var service = left(arguments.table, 3) == "tbl" ? right(arguments.table, len(arguments.table) - 3) & "Service": arguments.table & "Service";
+		var gateway = left(arguments.table, 3) == "tbl" ? right(arguments.table, len(arguments.table) - 3) & "Gateway": arguments.table & "Gateway";
+		var objName = "q#primaryDetail.field#";
+		if (right(objName, 2) == "ID") {
+			objName = left(objName, len(objName) - 2);
+		}
+
+		output &= '&lt;cfcomponent accessors="true" singleton&gt;';
+
+		output &= '#nl##nl##tab##generateSelect(arguments.datasource, arguments.table, arguments.columnDetail, arguments.primaryDetail, true)#';
+		output &= '#nl##nl##tab##generateSelectAll(arguments.datasource, arguments.table, arguments.columnDetail, true)#';
+		output &= '#nl##nl##tab##generateUpdate(arguments.datasource, arguments.table, arguments.columnDetail, arguments.primaryDetail, arguments.remainderDetail, true)#';
+		output &= '#nl##nl##tab##generateInsert(arguments.datasource, arguments.table, arguments.primaryDetail, arguments.remainderDetail, true)#';
+
+        output &= '#nl#&lt;/cfcomponent&gt;';
 
 		return output;
 	}
@@ -548,7 +666,7 @@ component accessors="true" singleton {
 		return output;
 	}
 
-	private string function generateService() {
+	private string function generateAwsService() {
 		var output = "";
 
 		output &= 'component accessors="true" singleton {';
