@@ -469,8 +469,6 @@ component accessors="true" singleton {
 		output &= 'component accessors="true" singleton {';
 		output &= '#nl##tab#property name="#gateway#" inject="#ucFirst(gateway)#";';
 
-		output &= '#nl##nl##tab##generateInit(arguments.datasource, arguments.table, arguments.columnDetail, true)#';
-
 		output &= '#nl##nl##tab#remote query function load(required numeric #primaryDetail.field#) {';
         output &= '#nl##tab##tab#return #gateway#.load(arguments.#primaryDetail.field#);';
         output &= '#nl##tab#}';
@@ -485,6 +483,24 @@ component accessors="true" singleton {
         output &= '#nl##tab##tab#} else {';
         output &= '#nl##tab##tab##tab#return #gateway#.insertRecord(arguments.#objName#);';
         output &= '#nl##tab##tab#}';
+        output &= '#nl##tab#}';
+
+		output &= '#nl##nl##tab##generateInit(arguments.datasource, arguments.table, arguments.columnDetail, true)#';
+
+		output &= '#nl##nl##tab#remote query function populate(required numeric #primaryDetail.field#, required struct data) {';
+        output &= '#nl##tab##tab#local.#objName# = load(arguments.#primaryDetail.field#);#nl#';
+        output &= '#nl##tab##tab#if (local.#objName#.recordCount != 1) {';
+        output &= '#nl##tab##tab##tab#local.#objName# = buildInit();';
+        output &= '#nl##tab##tab#}#nl#';
+
+		output &= '#nl##tab##tab#for (var column in local.#objName#.columnList) {';
+		output &= '#nl##tab##tab##tab#if (column == "#ucase(primaryDetail.field)#") {';
+		output &= '#nl##tab##tab##tab##tab#continue;';
+		output &= '#nl##tab##tab##tab#}';
+		output &= '#nl##tab##tab##tab#querySetCell(local.#objName#, column, structKeyExists(arguments.data, column) ? arguments.data[column] : local.#objName#[column]);';
+		output &= '#nl##tab##tab#}';
+
+		output &= '#nl##nl##tab##tab#return local.#objName#;';
         output &= '#nl##tab#}';
         output &= '#nl#}';
 
