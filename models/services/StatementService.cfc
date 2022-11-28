@@ -187,8 +187,8 @@ component accessors="true" singleton {
 			local.tab = tab & tab;
 		}
 
-		output &= '<cffunction name="loadAll" returntype="query" output="false">';
-		output &= '#nl##tab#<cfquery name="local.qLoadAll">';
+		output &= '<cffunction name="loadAll" returntype="array" output="false">';
+		output &= '#nl##tab#<cfquery name="local.qLoadAll" returntype="array">';
         output &= '#nl##tab##chr(9)#SELECT';
 		for (var column in arguments.columnDetail) {
 			output &= '#nl##tab##chr(9)##chr(9)#';
@@ -473,7 +473,7 @@ component accessors="true" singleton {
         output &= '#nl##tab##tab#return #gateway#.load(arguments.#primaryDetail.field#);';
         output &= '#nl##tab#}';
 
-		output &= '#nl##nl##tab#remote query function loadAll() {';
+		output &= '#nl##nl##tab#remote array function loadAll() {';
         output &= '#nl##tab##tab#return #gateway#.loadAll();';
         output &= '#nl##tab#}';
 
