@@ -44,4 +44,21 @@ component accessors="true" singleton {
         return type;
     }
 
+    remote string function spaceByCase(required string name) {
+        var output = "";
+        var prevCharIsUpper = false;
+
+        for (var i = 1; i <= len(arguments.name); i++) {
+            if (i != 1 && reFind("[A-Z]", arguments.name[i]) && !prevCharIsUpper) {
+                output &= " #arguments.name[i]#";
+                prevCharIsUpper = true;
+            } else {
+                output &= arguments.name[i];
+                prevCharIsUpper = false;
+            }
+        }
+
+        return output;
+    }
+
 }

@@ -1,5 +1,6 @@
 component accessors="true" singleton {
 
+	property name="utilService" inject="utilService";
 	property name="tab" inject="coldbox:setting:tab";
 	property name="nl" inject="coldbox:setting:nl";
 
@@ -39,6 +40,16 @@ component accessors="true" singleton {
 						"order": 2
 						, "name": "Generic Gateway Script"
 						, "output": generateGateway(
+							arguments.datasource
+							, arguments.table
+							, arguments.columnDetail
+							, arguments.primaryDetail
+							, arguments.remainderDetail)
+					},
+					"validation": {
+						"order": 2
+						, "name": "Generic Validation Call"
+						, "output": generateValidationCall(
 							arguments.datasource
 							, arguments.table
 							, arguments.columnDetail
@@ -769,6 +780,28 @@ component accessors="true" singleton {
 		output &= '#nl##nl##tab##tab#return;';
 		output &= '#nl##tab#}';
 		output &= '#nl#}';
+
+		return output;
+	}
+
+	private string function generateValidationCall(
+		required struct datasource
+		, required string table
+		, required array columnDetail
+		, required struct primaryDetail
+		, required array remainderDetail) {
+
+		output = "var errors = validationService.validatePayload([";
+
+		for (var column in remainderDetail) {
+			output &= '#nl##tab#';
+			if (column.field != remainderDetail[1].field) {
+				output &= ', ';
+			}
+			output &= '{"name":"#column.field#", "friendlyName": "#utilService.spaceByCase(column.field)#", "type": "#column.fieldType#", "value": rc.#column.field#, "required": false}';
+		}
+
+		output &= '#nl#]);';
 
 		return output;
 	}
